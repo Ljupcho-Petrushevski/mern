@@ -1,6 +1,6 @@
 const express = require('express');
+const connectDB = require('./config/db');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 
 const users = require('./routes/api/users');
 const profile = require('./routes/api/profile');
@@ -8,26 +8,21 @@ const posts = require('./routes/api/posts');
 
 const app = express();
 
-// Body parser middleware
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// Connect to Database 
+connectDB();
 
-// DB config 
-const db = require('./config/keys').mongoURI;
+// Init Middleware (formerly body-parser, now included in express natively)
+app.use(express.json({
+    extended: false
+}));
 
-// Connect to MongoDB 
-mongoose
-    .connect(db, { useNewUrlParser: true })
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.log(err));
+app.get('/', (req, res) => res.send('API Running'));
 
-app.get('/', (req, res) => res.send('Hello'));
-
-// Use Routes
-
-app.use('/api/users', users);
-app.use('/api/profile', profile);
-app.use('/api/posts', posts);
+// Define Routes
+app.use('/api/users', require('./routes/api/users'));
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/profile', require('./routes/api/profile'));
+app.use('/api/posts', require('./routes/api/posts'));
 
 const port = process.env.port || 5000;
 
